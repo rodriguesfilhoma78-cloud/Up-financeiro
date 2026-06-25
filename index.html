@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#16a34a" />
+  <title>Lista de Compras</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>🛒 Lista de Compras</h1>
+    <p class="subtitle">Controle de itens, valores e histórico de preços</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="lista">Lista atual</button>
+    <button class="tab-btn" data-tab="historico">Histórico (90 dias)</button>
+  </nav>
+
+  <main>
+    <!-- ============ ABA: LISTA ATUAL ============ -->
+    <section id="tab-lista" class="tab-panel active">
+      <form id="form-item" class="card form-item" autocomplete="off">
+        <div class="field field-nome">
+          <label for="nome">Item</label>
+          <input type="text" id="nome" placeholder="Ex.: Arroz 5kg" required list="sugestoes" />
+          <datalist id="sugestoes"></datalist>
+        </div>
+        <div class="field field-qtd">
+          <label for="qtd">Qtd.</label>
+          <input type="number" id="qtd" value="1" min="0" step="0.001" inputmode="decimal" required />
+        </div>
+        <div class="field field-valor">
+          <label for="valor">Valor unit. (R$)</label>
+          <input type="number" id="valor" placeholder="0,00" min="0" step="0.01" inputmode="decimal" required />
+        </div>
+        <button type="submit" class="btn-add">Adicionar</button>
+      </form>
+
+      <div class="card">
+        <div class="lista-header">
+          <h2>Itens da lista</h2>
+          <span id="comparativo-preco" class="comparativo"></span>
+        </div>
+        <ul id="lista-itens" class="lista-itens"></ul>
+        <p id="lista-vazia" class="vazia">Nenhum item ainda. Adicione o primeiro acima. 👆</p>
+      </div>
+
+      <div class="card total-card">
+        <div class="total-linha">
+          <span>Total de itens</span>
+          <strong id="total-qtd">0</strong>
+        </div>
+        <div class="total-linha total-geral">
+          <span>Total da compra</span>
+          <strong id="total-geral">R$ 0,00</strong>
+        </div>
+      </div>
+
+      <div class="acoes">
+        <button id="btn-finalizar" class="btn-primary">Finalizar compra</button>
+        <button id="btn-limpar" class="btn-ghost">Limpar lista</button>
+      </div>
+    </section>
+
+    <!-- ============ ABA: HISTÓRICO ============ -->
+    <section id="tab-historico" class="tab-panel">
+      <div class="card">
+        <h2>Compras finalizadas</h2>
+        <p class="hint">Mantemos os últimos 90 dias para você comparar preços.</p>
+        <ul id="lista-historico" class="historico"></ul>
+        <p id="historico-vazio" class="vazia">Nenhuma compra finalizada nos últimos 90 dias.</p>
+      </div>
+
+      <div class="card">
+        <h2>📈 Comparar preços de um item</h2>
+        <div class="field">
+          <label for="busca-item">Selecione o item</label>
+          <select id="busca-item"></select>
+        </div>
+        <div id="evolucao-preco" class="evolucao"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">Os dados ficam salvos somente neste aparelho.</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
