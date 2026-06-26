@@ -101,7 +101,7 @@ const inputValor = document.getElementById('valor');
 formItem.addEventListener('submit', (e) => {
   e.preventDefault();
   const nome = inputNome.value.trim();
-  const qtd = parseFloat(inputQtd.value);
+  const qtd = parseInt(inputQtd.value, 10); // quantidade sempre inteira
   const valor = parseFloat(inputValor.value);
 
   if (!nome || isNaN(qtd) || isNaN(valor)) return;
@@ -169,7 +169,7 @@ function renderLista() {
       <div class="item-info">
         <div class="item-nome">${escapeHtml(it.nome)}${badge}</div>
         <div class="item-edit">
-          <input class="edit-qtd" type="number" min="0" step="0.001" inputmode="decimal"
+          <input class="edit-qtd" type="number" min="1" step="1" inputmode="numeric"
                  value="${it.qtd}" aria-label="Quantidade" />
           <span class="vezes">×</span>
           <span class="cifrao">R$</span>
@@ -188,7 +188,7 @@ function renderLista() {
 
     // Atualiza o subtotal e o total enquanto digita (sem re-renderizar, para não perder o foco)
     const atualizarAoVivo = () => {
-      const q = parseFloat(inpQtd.value);
+      const q = parseInt(inpQtd.value, 10); // quantidade sempre inteira
       const v = parseFloat(inpValor.value);
       it.qtd = isNaN(q) ? 0 : q;
       it.valor = isNaN(v) ? 0 : v;
