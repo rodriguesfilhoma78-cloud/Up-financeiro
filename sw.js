@@ -1,6 +1,7 @@
 /* Service worker — permite instalar o app e usá-lo offline.
-   Estratégia: cache-first para os arquivos do app. */
-const CACHE = 'lista-compras-v4';
+   Estratégia: REDE PRIMEIRO. Com internet, sempre busca a versão mais
+   recente e atualiza o cache; sem internet, usa a cópia salva. */
+const CACHE = 'lista-compras-v5';
 const ARQUIVOS = [
   './',
   './index.html',
@@ -29,18 +30,16 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request).then((resp) => {
-      if (resp) return resp;
-      return fetch(e.request)
-        .then((res) => {
-          // Guarda novas respostas válidas para uso offline futuro
-          if (res && res.status === 200 && res.type === 'basic') {
-            const copia = res.clone();
-            caches.open(CACHE).then((c) => c.put(e.request, copia));
-          }
-          return res;
-        })
-        .catch(() => caches.match('./index.html'));
-    })
+    fetch(e.request)
+      .then((res) => {
+        // Atualiza o cache com a versão mais nova baixada da rede
+        if (res && res.status === 200 && res.type === 'basic') {
+          const copia = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copia));
+        }
+        return res;
+      })
+      // Sem internet: usa o que está salvo; em última instância, a página inicial
+      .catch(() => caches.match(e.request).then((r) => r || caches.match('./index.html')))
   );
 });
