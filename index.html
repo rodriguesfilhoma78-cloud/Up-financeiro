@@ -26,9 +26,10 @@
   </header>
 
   <nav class="tabs">
-    <button class="tab-btn active" data-tab="lista">Lista atual</button>
+    <button class="tab-btn active" data-tab="lista">Lista</button>
     <button class="tab-btn" data-tab="modelos">Modelos</button>
     <button class="tab-btn" data-tab="historico">Histórico</button>
+    <button class="tab-btn" data-tab="backup">Backup</button>
   </nav>
 
   <main>
@@ -111,6 +112,24 @@
           <select id="busca-item"></select>
         </div>
         <div id="evolucao-preco" class="evolucao"></div>
+      </div>
+    </section>
+
+    <!-- ============ ABA: BACKUP (exportar / importar) ============ -->
+    <section id="tab-backup" class="tab-panel">
+      <div class="card">
+        <h2>💾 Backup dos dados</h2>
+        <p class="hint">Salve uma cópia de tudo (lista, histórico e modelos) num arquivo. Útil para guardar, trocar de celular ou caso limpe os dados do navegador.</p>
+        <div id="backup-resumo" class="backup-resumo"></div>
+        <button id="btn-exportar" class="btn-primary">⬇️ Baixar backup (.json)</button>
+      </div>
+
+      <div class="card">
+        <h2>♻️ Restaurar backup</h2>
+        <p class="hint">Selecione um arquivo de backup para restaurar. Isso substitui os dados atuais deste aparelho.</p>
+        <input type="file" id="arquivo-backup" accept="application/json,.json" hidden />
+        <button id="btn-importar" class="btn-ghost-azul">📂 Escolher arquivo e restaurar</button>
+        <p id="import-status" class="import-status"></p>
       </div>
     </section>
   </main>

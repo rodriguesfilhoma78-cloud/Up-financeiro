@@ -301,6 +301,34 @@ h2 { font-size: 1.05rem; margin-bottom: 8px; }
 .btn-add-inline:active { background: #f0fdf4; }
 .btn-add-selecionados { width: 100%; margin-top: 2px; }
 
+/* ---- Backup ---- */
+.backup-resumo {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 12px 8px;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.backup-stat { display: flex; flex-direction: column; }
+.backup-stat strong { font-size: 1.3rem; color: var(--verde); }
+.backup-stat span { font-size: 0.72rem; color: var(--texto-suave); }
+.btn-ghost-azul {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  color: var(--azul);
+  border: 1px solid var(--azul);
+}
+.btn-ghost-azul:active { background: #eff6ff; }
+.import-status { margin-top: 10px; font-size: 0.9rem; font-weight: 600; text-align: center; }
+
 .rodape {
   text-align: center;
   font-size: 0.75rem;
