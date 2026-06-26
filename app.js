@@ -77,7 +77,7 @@ function precosDoItem(nome) {
   historicoValido().forEach((compra) => {
     compra.itens.forEach((it) => {
       if (normalizar(it.nome) === alvo) {
-        registros.push({ data: compra.data, valor: it.valor });
+        registros.push({ data: compra.data, valor: it.valor, mercado: compra.mercado || '' });
       }
     });
   });
@@ -168,11 +168,43 @@ function renderLista() {
     li.innerHTML = `
       <div class="item-info">
         <div class="item-nome">${escapeHtml(it.nome)}${badge}</div>
-        <div class="item-detalhe">${numeroBonito(it.qtd)} × ${moeda(it.valor)}</div>
+        <div class="item-edit">
+          <input class="edit-qtd" type="number" min="0" step="0.001" inputmode="decimal"
+                 value="${it.qtd}" aria-label="Quantidade" />
+          <span class="vezes">×</span>
+          <span class="cifrao">R$</span>
+          <input class="edit-valor" type="number" min="0" step="0.01" inputmode="decimal"
+                 value="${it.valor}" aria-label="Valor unitário" />
+        </div>
       </div>
       <div class="item-subtotal">${moeda(subtotal)}</div>
       <button class="btn-remover" aria-label="Remover">&times;</button>
     `;
+
+    // Editar quantidade e preço direto na lista
+    const inpQtd = li.querySelector('.edit-qtd');
+    const inpValor = li.querySelector('.edit-valor');
+    const subtotalEl = li.querySelector('.item-subtotal');
+
+    // Atualiza o subtotal e o total enquanto digita (sem re-renderizar, para não perder o foco)
+    const atualizarAoVivo = () => {
+      const q = parseFloat(inpQtd.value);
+      const v = parseFloat(inpValor.value);
+      it.qtd = isNaN(q) ? 0 : q;
+      it.valor = isNaN(v) ? 0 : v;
+      subtotalEl.textContent = moeda(it.qtd * it.valor);
+      recalcularTotais();
+    };
+    // Ao sair do campo, salva e re-renderiza (atualiza badges/comparativos)
+    const salvarEdicao = () => {
+      salvarJSON(CHAVE_LISTA, lista);
+      renderLista();
+    };
+    inpQtd.addEventListener('input', atualizarAoVivo);
+    inpValor.addEventListener('input', atualizarAoVivo);
+    inpQtd.addEventListener('change', salvarEdicao);
+    inpValor.addEventListener('change', salvarEdicao);
+
     li.querySelector('.btn-remover').addEventListener('click', () => removerItem(it.id));
     ul.appendChild(li);
   });
@@ -184,6 +216,19 @@ function renderLista() {
   // Comparativo do total da lista com a última compra finalizada
   renderComparativoTotal(totalGeral);
   atualizarSugestoes();
+}
+
+// Recalcula e mostra os totais a partir da lista atual (sem reconstruir os itens)
+function recalcularTotais() {
+  let totalGeral = 0;
+  let totalQtd = 0;
+  lista.forEach((it) => {
+    totalGeral += it.qtd * it.valor;
+    totalQtd += it.qtd;
+  });
+  document.getElementById('total-qtd').textContent = numeroBonito(totalQtd);
+  document.getElementById('total-geral').textContent = moeda(totalGeral);
+  renderComparativoTotal(totalGeral);
 }
 
 function renderComparativoTotal(totalAtual) {
@@ -221,6 +266,23 @@ function atualizarSugestoes() {
     opt.value = nome;
     dl.appendChild(opt);
   });
+  atualizarMercados();
+}
+
+// Sugestões de mercados já usados (datalist do campo Mercado)
+function atualizarMercados() {
+  const dl = document.getElementById('mercados');
+  if (!dl) return;
+  const mercados = new Set();
+  historicoValido().forEach((c) => {
+    if (c.mercado) mercados.add(c.mercado);
+  });
+  dl.innerHTML = '';
+  [...mercados].sort().forEach((m) => {
+    const opt = document.createElement('option');
+    opt.value = m;
+    dl.appendChild(opt);
+  });
 }
 
 /* ---------- Finalizar / Limpar ---------- */
@@ -230,9 +292,12 @@ document.getElementById('btn-finalizar').addEventListener('click', () => {
     return;
   }
   const total = lista.reduce((s, it) => s + it.qtd * it.valor, 0);
+  const inpMercado = document.getElementById('mercado');
+  const mercado = inpMercado.value.trim();
   const compra = {
     id: Date.now(),
     data: new Date().toISOString(),
+    mercado,
     total,
     itens: lista.map((it) => ({ nome: it.nome, qtd: it.qtd, valor: it.valor })),
   };
@@ -243,9 +308,11 @@ document.getElementById('btn-finalizar').addEventListener('click', () => {
 
   lista = [];
   salvarJSON(CHAVE_LISTA, lista);
+  inpMercado.value = '';
   renderLista();
 
-  alert(`Compra finalizada: ${moeda(total)}\nSalva no histórico.`);
+  const ondeTxt = mercado ? ` em ${mercado}` : '';
+  alert(`Compra finalizada${ondeTxt}: ${moeda(total)}\nSalva no histórico.`);
 });
 
 document.getElementById('btn-limpar').addEventListener('click', () => {
@@ -278,9 +345,13 @@ function renderHistorico() {
       )
       .join('');
 
+    const mercadoTxt = compra.mercado
+      ? `<span class="compra-mercado">🏪 ${escapeHtml(compra.mercado)}</span>`
+      : '';
+
     li.innerHTML = `
       <div class="compra-topo">
-        <span class="compra-data">${formatarData(compra.data)} · ${qtdItens} ${qtdItens === 1 ? 'item' : 'itens'}</span>
+        <span class="compra-data">${formatarData(compra.data)} · ${qtdItens} ${qtdItens === 1 ? 'item' : 'itens'}${mercadoTxt}</span>
         <span class="compra-total">${moeda(compra.total)}</span>
       </div>
       <div class="compra-detalhes">${detalhes}</div>
@@ -340,7 +411,8 @@ function renderEvolucao(nome) {
       let marca = '';
       if (r.valor === min && min !== max) marca = ' 🟢';
       else if (r.valor === max && min !== max) marca = ' 🔴';
-      return `<div class="evo-linha"><span class="evo-data">${formatarData(r.data)}</span><span>${moeda(r.valor)}${marca}</span></div>`;
+      const mercado = r.mercado ? ` · ${escapeHtml(r.mercado)}` : '';
+      return `<div class="evo-linha"><span class="evo-data">${formatarData(r.data)}${mercado}</span><span>${moeda(r.valor)}${marca}</span></div>`;
     })
     .join('');
 
