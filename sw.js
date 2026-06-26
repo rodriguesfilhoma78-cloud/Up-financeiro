@@ -1,7 +1,7 @@
 /* Service worker — permite instalar o app e usá-lo offline.
    Estratégia: REDE PRIMEIRO. Com internet, sempre busca a versão mais
    recente e atualiza o cache; sem internet, usa a cópia salva. */
-const CACHE = 'lista-compras-v5';
+const CACHE = 'lista-compras-v6';
 const ARQUIVOS = [
   './',
   './index.html',
