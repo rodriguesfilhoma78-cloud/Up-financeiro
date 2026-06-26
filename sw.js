@@ -1,6 +1,6 @@
 /* Service worker — permite instalar o app e usá-lo offline.
    Estratégia: cache-first para os arquivos do app. */
-const CACHE = 'lista-compras-v2';
+const CACHE = 'lista-compras-v3';
 const ARQUIVOS = [
   './',
   './index.html',

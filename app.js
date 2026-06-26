@@ -486,6 +486,105 @@ document.getElementById('form-categoria').addEventListener('submit', (e) => {
 });
 
 /* ===========================================================
+   ABA: BACKUP — exportar e importar todos os dados
+   =========================================================== */
+const VERSAO_BACKUP = 1;
+
+function renderBackup() {
+  const el = document.getElementById('backup-resumo');
+  const nCompras = historicoValido().length;
+  const nItens = lista.length;
+  const cat = lerCatalogo();
+  const nCategorias = Object.keys(cat).length;
+  el.innerHTML = `
+    <div class="backup-stat"><strong>${nItens}</strong><span>itens na lista</span></div>
+    <div class="backup-stat"><strong>${nCompras}</strong><span>compras no histórico</span></div>
+    <div class="backup-stat"><strong>${nCategorias}</strong><span>categorias de modelos</span></div>
+  `;
+}
+
+// Exportar: baixa um arquivo .json com tudo
+document.getElementById('btn-exportar').addEventListener('click', () => {
+  const dados = {
+    app: 'Lista de Compras',
+    versao: VERSAO_BACKUP,
+    exportadoEm: new Date().toISOString(),
+    lista: lerJSON(CHAVE_LISTA, []),
+    historico: lerJSON(CHAVE_HISTORICO, []),
+    catalogo: lerCatalogo(),
+  };
+  const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const hoje = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `lista-de-compras-backup-${hoje}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+// Importar: abre o seletor de arquivo
+const inputArquivo = document.getElementById('arquivo-backup');
+document.getElementById('btn-importar').addEventListener('click', () => {
+  inputArquivo.value = '';
+  inputArquivo.click();
+});
+
+inputArquivo.addEventListener('change', () => {
+  const arquivo = inputArquivo.files && inputArquivo.files[0];
+  if (!arquivo) return;
+  const status = document.getElementById('import-status');
+  const leitor = new FileReader();
+
+  leitor.onload = () => {
+    let dados;
+    try {
+      dados = JSON.parse(leitor.result);
+    } catch (e) {
+      status.textContent = '❌ Arquivo inválido (não é um backup válido).';
+      status.style.color = 'var(--vermelho)';
+      return;
+    }
+
+    // Validação básica do formato
+    const temLista = Array.isArray(dados.lista);
+    const temHist = Array.isArray(dados.historico);
+    const temCat = dados.catalogo && typeof dados.catalogo === 'object';
+    if (!temLista && !temHist && !temCat) {
+      status.textContent = '❌ Não encontrei dados de lista, histórico ou modelos neste arquivo.';
+      status.style.color = 'var(--vermelho)';
+      return;
+    }
+
+    if (!confirm('Restaurar este backup vai SUBSTITUIR os dados atuais deste aparelho. Continuar?')) {
+      return;
+    }
+
+    if (temLista) salvarJSON(CHAVE_LISTA, dados.lista);
+    if (temHist) salvarJSON(CHAVE_HISTORICO, dados.historico);
+    if (temCat) salvarCatalogo(dados.catalogo);
+
+    // Recarrega o estado em memória
+    lista = lerJSON(CHAVE_LISTA, []);
+    historicoValido();
+    renderLista();
+    renderBackup();
+
+    status.textContent = '✅ Backup restaurado com sucesso!';
+    status.style.color = 'var(--verde-escuro)';
+  };
+
+  leitor.onerror = () => {
+    status.textContent = '❌ Não foi possível ler o arquivo.';
+    status.style.color = 'var(--vermelho)';
+  };
+
+  leitor.readAsText(arquivo);
+});
+
+/* ===========================================================
    Navegação por abas
    =========================================================== */
 document.querySelectorAll('.tab-btn').forEach((btn) => {
@@ -498,6 +597,7 @@ document.querySelectorAll('.tab-btn').forEach((btn) => {
     if (alvo === 'historico') renderHistorico();
     if (alvo === 'lista') renderLista();
     if (alvo === 'modelos') renderModelos();
+    if (alvo === 'backup') renderBackup();
   });
 });
 
