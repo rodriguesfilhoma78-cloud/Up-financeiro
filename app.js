@@ -343,3 +343,10 @@ function escapeHtml(s) {
 /* ---------- Inicialização ---------- */
 historicoValido(); // limpa registros > 90 dias ao abrir
 renderLista();
+
+/* ---------- Service worker (instalação como app + offline) ---------- */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
