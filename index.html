@@ -27,7 +27,8 @@
 
   <nav class="tabs">
     <button class="tab-btn active" data-tab="lista">Lista atual</button>
-    <button class="tab-btn" data-tab="historico">Histórico (90 dias)</button>
+    <button class="tab-btn" data-tab="modelos">Modelos</button>
+    <button class="tab-btn" data-tab="historico">Histórico</button>
   </nav>
 
   <main>
@@ -73,6 +74,24 @@
       <div class="acoes">
         <button id="btn-finalizar" class="btn-primary">Finalizar compra</button>
         <button id="btn-limpar" class="btn-ghost">Limpar lista</button>
+      </div>
+    </section>
+
+    <!-- ============ ABA: MODELOS (listas prontas editáveis) ============ -->
+    <section id="tab-modelos" class="tab-panel">
+      <div class="card">
+        <h2>Listas prontas</h2>
+        <p class="hint">Marque os itens e toque em "Adicionar à lista". Você pode editar tudo: incluir, remover ou criar categorias.</p>
+      </div>
+
+      <div id="categorias"></div>
+
+      <div class="card">
+        <h2>➕ Nova categoria</h2>
+        <form id="form-categoria" class="form-inline" autocomplete="off">
+          <input type="text" id="nova-categoria" placeholder="Ex.: Bebidas, Padaria…" required />
+          <button type="submit" class="btn-add-inline">Criar</button>
+        </form>
       </div>
     </section>
 

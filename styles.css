@@ -229,6 +229,78 @@ h2 { font-size: 1.05rem; margin-bottom: 8px; }
 
 .comparativo { font-size: 0.78rem; font-weight: 600; }
 
+/* ---- Modelos (listas prontas) ---- */
+.cat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.btn-excluir-cat {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.7;
+}
+.btn-excluir-cat:active { opacity: 1; }
+.cat-lista { list-style: none; margin-bottom: 10px; }
+.cat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--borda);
+}
+.cat-item:last-child { border-bottom: none; }
+.cat-check {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.cat-check input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--verde);
+  flex-shrink: 0;
+}
+.form-inline {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.form-inline input {
+  flex: 1;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.95rem;
+  background: #fff;
+  color: var(--texto);
+}
+.form-inline input:focus {
+  outline: none;
+  border-color: var(--verde);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+.btn-add-inline {
+  background: #fff;
+  color: var(--verde-escuro);
+  border: 1px solid var(--verde);
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-add-inline:active { background: #f0fdf4; }
+.btn-add-selecionados { width: 100%; margin-top: 2px; }
+
 .rodape {
   text-align: center;
   font-size: 0.75rem;

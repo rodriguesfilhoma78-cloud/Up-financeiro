@@ -9,6 +9,25 @@
 const DIAS_HISTORICO = 90;
 const CHAVE_LISTA = 'lc_lista_atual';
 const CHAVE_HISTORICO = 'lc_historico';
+const CHAVE_CATALOGO = 'lc_catalogo';
+
+// Listas prontas iniciais (o usuário pode alterar tudo depois)
+const CATALOGO_PADRAO = {
+  'Higiene': [
+    'Sabonete', 'Shampoo', 'Condicionador', 'Creme dental', 'Escova de dente',
+    'Papel higiênico', 'Desodorante', 'Sabonete líquido', 'Absorvente',
+    'Cotonete', 'Lâmina de barbear', 'Fralda',
+  ],
+  'Produtos de limpeza': [
+    'Detergente', 'Sabão em pó', 'Amaciante', 'Água sanitária', 'Desinfetante',
+    'Esponja de aço', 'Saco de lixo', 'Limpa-vidros', 'Multiuso',
+    'Lustra-móveis', 'Pano de chão', 'Papel toalha', 'Alvejante',
+  ],
+  'Perecíveis': [
+    'Leite', 'Pão', 'Ovos', 'Queijo', 'Presunto', 'Frutas', 'Verduras',
+    'Legumes', 'Carne', 'Frango', 'Iogurte', 'Manteiga', 'Tomate',
+  ],
+};
 
 /* ---------- Utilidades ---------- */
 const moeda = (n) =>
@@ -96,6 +115,20 @@ formItem.addEventListener('submit', (e) => {
   renderLista();
 });
 
+// Adiciona um item à lista pelo nome (usado pelos modelos prontos).
+// Se já existir um item com o mesmo nome, soma 1 na quantidade.
+function adicionarNaLista(nome) {
+  const existente = lista.find((it) => normalizar(it.nome) === normalizar(nome));
+  if (existente) {
+    existente.qtd += 1;
+  } else {
+    // Já preenche o último preço pago, se houver no histórico
+    const valor = ultimoPreco(nome) ?? 0;
+    lista.push({ id: Date.now() + Math.random(), nome, qtd: 1, valor });
+  }
+  salvarJSON(CHAVE_LISTA, lista);
+}
+
 function removerItem(id) {
   lista = lista.filter((it) => it.id !== id);
   salvarJSON(CHAVE_LISTA, lista);
@@ -179,6 +212,9 @@ function atualizarSugestoes() {
   const dl = document.getElementById('sugestoes');
   const nomes = new Set();
   historicoValido().forEach((c) => c.itens.forEach((it) => nomes.add(it.nome)));
+  // Inclui também os itens das listas prontas (modelos)
+  const cat = lerCatalogo();
+  Object.values(cat).forEach((itens) => itens.forEach((n) => nomes.add(n)));
   dl.innerHTML = '';
   [...nomes].sort().forEach((nome) => {
     const opt = document.createElement('option');
@@ -319,6 +355,137 @@ function renderEvolucao(nome) {
 }
 
 /* ===========================================================
+   ABA: MODELOS — listas prontas e editáveis
+   =========================================================== */
+function lerCatalogo() {
+  const cat = lerJSON(CHAVE_CATALOGO, null);
+  if (cat && typeof cat === 'object') return cat;
+  // Primeira vez: semeia com as listas padrão
+  salvarJSON(CHAVE_CATALOGO, CATALOGO_PADRAO);
+  return JSON.parse(JSON.stringify(CATALOGO_PADRAO));
+}
+
+function salvarCatalogo(cat) {
+  salvarJSON(CHAVE_CATALOGO, cat);
+}
+
+function renderModelos() {
+  const cont = document.getElementById('categorias');
+  const cat = lerCatalogo();
+  cont.innerHTML = '';
+
+  const categorias = Object.keys(cat);
+  if (!categorias.length) {
+    cont.innerHTML = '<div class="card"><p class="vazia">Nenhuma categoria. Crie uma abaixo. 👇</p></div>';
+    return;
+  }
+
+  categorias.forEach((nomeCat) => {
+    const itens = cat[nomeCat] || [];
+    const card = document.createElement('div');
+    card.className = 'card categoria';
+
+    const itensHtml = itens.length
+      ? itens
+          .map(
+            (item, i) => `
+        <li class="cat-item">
+          <label class="cat-check">
+            <input type="checkbox" data-item="${escapeHtml(item)}" />
+            <span>${escapeHtml(item)}</span>
+          </label>
+          <button class="btn-remover" data-remover="${i}" aria-label="Remover item">&times;</button>
+        </li>`
+          )
+          .join('')
+      : '<li class="vazia" style="text-align:left">Sem itens. Adicione abaixo.</li>';
+
+    card.innerHTML = `
+      <div class="cat-header">
+        <h2>${escapeHtml(nomeCat)}</h2>
+        <button class="btn-excluir-cat" data-cat="${escapeHtml(nomeCat)}" title="Excluir categoria">🗑️</button>
+      </div>
+      <ul class="cat-lista">${itensHtml}</ul>
+      <form class="form-inline form-add-item" data-cat="${escapeHtml(nomeCat)}" autocomplete="off">
+        <input type="text" placeholder="Novo item nesta categoria…" required />
+        <button type="submit" class="btn-add-inline">＋ item</button>
+      </form>
+      <button class="btn-primary btn-add-selecionados" data-cat="${escapeHtml(nomeCat)}">
+        Adicionar selecionados à lista
+      </button>
+    `;
+    cont.appendChild(card);
+
+    // Remover item individual
+    card.querySelectorAll('[data-remover]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.remover, 10);
+        const atual = lerCatalogo();
+        atual[nomeCat].splice(idx, 1);
+        salvarCatalogo(atual);
+        renderModelos();
+      });
+    });
+
+    // Adicionar novo item à categoria
+    card.querySelector('.form-add-item').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = e.target.querySelector('input');
+      const novo = input.value.trim();
+      if (!novo) return;
+      const atual = lerCatalogo();
+      const jaTem = atual[nomeCat].some((x) => normalizar(x) === normalizar(novo));
+      if (!jaTem) atual[nomeCat].push(novo);
+      salvarCatalogo(atual);
+      renderModelos();
+    });
+
+    // Excluir a categoria inteira
+    card.querySelector('.btn-excluir-cat').addEventListener('click', () => {
+      if (confirm(`Excluir a categoria "${nomeCat}" e todos os seus itens?`)) {
+        const atual = lerCatalogo();
+        delete atual[nomeCat];
+        salvarCatalogo(atual);
+        renderModelos();
+      }
+    });
+
+    // Adicionar itens marcados à lista de compras
+    card.querySelector('.btn-add-selecionados').addEventListener('click', () => {
+      const marcados = [...card.querySelectorAll('input[type=checkbox]:checked')];
+      if (!marcados.length) {
+        alert('Marque ao menos um item para adicionar.');
+        return;
+      }
+      marcados.forEach((chk) => {
+        adicionarNaLista(chk.dataset.item);
+        chk.checked = false;
+      });
+      renderLista();
+      const n = marcados.length;
+      alert(`${n} ${n === 1 ? 'item adicionado' : 'itens adicionados'} à sua lista.`);
+    });
+  });
+}
+
+// Criar nova categoria
+document.getElementById('form-categoria').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const input = document.getElementById('nova-categoria');
+  const nome = input.value.trim();
+  if (!nome) return;
+  const cat = lerCatalogo();
+  if (Object.keys(cat).some((c) => normalizar(c) === normalizar(nome))) {
+    alert('Já existe uma categoria com esse nome.');
+    return;
+  }
+  cat[nome] = [];
+  salvarCatalogo(cat);
+  input.value = '';
+  renderModelos();
+});
+
+/* ===========================================================
    Navegação por abas
    =========================================================== */
 document.querySelectorAll('.tab-btn').forEach((btn) => {
@@ -330,6 +497,7 @@ document.querySelectorAll('.tab-btn').forEach((btn) => {
     });
     if (alvo === 'historico') renderHistorico();
     if (alvo === 'lista') renderLista();
+    if (alvo === 'modelos') renderModelos();
   });
 });
 
