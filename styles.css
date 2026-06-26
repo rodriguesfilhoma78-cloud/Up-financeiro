@@ -133,6 +133,63 @@ h2 { font-size: 1.05rem; margin-bottom: 8px; }
 .item-nome { font-weight: 600; }
 .item-detalhe { font-size: 0.82rem; color: var(--texto-suave); }
 .item-subtotal { font-weight: 700; white-space: nowrap; }
+
+/* Edição inline de quantidade e preço */
+.item-edit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: var(--texto-suave);
+}
+.item-edit input {
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 0.85rem;
+  color: var(--texto);
+  background: #fff;
+}
+.item-edit .edit-qtd { width: 56px; }
+.item-edit .edit-valor { width: 74px; }
+.item-edit input:focus {
+  outline: none;
+  border-color: var(--verde);
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.15);
+}
+.item-edit .vezes, .item-edit .cifrao { font-size: 0.8rem; }
+
+/* Campo de mercado */
+.mercado-card label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+  margin-bottom: 6px;
+}
+.mercado-card .opcional { font-weight: 400; text-transform: none; }
+.mercado-card input {
+  width: 100%;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 1rem;
+  background: #fff;
+  color: var(--texto);
+}
+.mercado-card input:focus {
+  outline: none;
+  border-color: var(--verde);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+.compra-mercado {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--verde-escuro);
+}
 .badge {
   font-size: 0.7rem;
   font-weight: 700;
