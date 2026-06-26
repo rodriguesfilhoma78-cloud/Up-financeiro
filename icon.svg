@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#16a34a"/>
+  <g fill="none" stroke="#ffffff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <!-- alça do carrinho -->
+    <path d="M120 140 H168 L208 320 H372"/>
+    <!-- corpo/cesta do carrinho -->
+    <path d="M176 188 H400 L376 300 H204"/>
+  </g>
+  <!-- rodas -->
+  <circle cx="216" cy="372" r="26" fill="#ffffff"/>
+  <circle cx="356" cy="372" r="26" fill="#ffffff"/>
+</svg>
